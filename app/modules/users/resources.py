@@ -53,6 +53,9 @@ class Users(Resource):
                 db.session,
                 default_error_message="Failed to create a new user."
             ):
+            args['is_active'] = True
+            args['is_regular_user'] = True
+            log.debug("receive create user parameters %s", args)
             new_user = User(**args)
             db.session.add(new_user)
         return new_user

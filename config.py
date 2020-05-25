@@ -50,7 +50,7 @@ class BaseConfig(object):
 
         'users',
         'teams',
-
+        'analysis',
         'api',
     )
 
