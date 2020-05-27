@@ -81,4 +81,52 @@ class AnalysisReport(db.Model, Timestamp):
                 self=self
             )
         )
+
+
+class MindMatch(db.Model, Timestamp):
     
+    __tablename__ = "mind_match"
+
+    id = db.Column(db.Integer, primary_key=True) 
+    cuid = db.Column(db.String(length=64), nullable=True)
+    log_id = db.Column(db.String(length=64), nullable=False)
+    request_type = db.Column(db.Integer, nullable=False)
+    match_type = db.Column(db.Integer, nullable=False)
+    gender = db.Column(db.Integer, nullable=False)
+    address = db.Column(db.String(length=128), nullable=False)
+    result = db.Column(db.String(length=1024), nullable=False)
+
+    def __repr__(self):
+        return (
+            "<{class_name}("
+            "log_id={self.log_id}, "
+            "result=\"{self.result}\", "
+            ")>".format(
+                class_name=self.__class__.__name__,
+                self=self
+            )
+        )
+    
+class MindSpecMatch(db.Model, Timestamp):
+
+    __tablename__ = "mind_spec_match"
+
+    id = db.Column(db.Integer, primary_key=True) 
+    cuid = db.Column(db.String(length=64), nullable=True)
+    log_id = db.Column(db.String(length=64), nullable=False)
+    request_type = db.Column(db.Integer, nullable=False)
+    match_type = db.Column(db.Integer, nullable=False)
+    other_id = db.Column(db.String(length=64), nullable=True)
+    result = db.Column(db.String(length=1024), nullable=False)
+
+    def __repr__(self):
+        return (
+            "<{class_name}("
+            "log_id={self.log_id}, "
+            "result=\"{self.result}\", "
+            ")>".format(
+                class_name=self.__class__.__name__,
+                self=self
+            )
+        )
+
