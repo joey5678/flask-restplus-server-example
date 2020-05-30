@@ -1,7 +1,8 @@
-import cv2
-import numpy as np
 import sys
 import os
+
+import cv2
+import numpy as np
 
 
 def getCanny(image, ksize=5, sigmax_y=2, threshold1=12, threshold2=12, apertureSize=0, Canny_border=3):
@@ -48,6 +49,9 @@ def getMaxContour(image, mode=1, method=1):
     return contour
 
 def getBoxPoint(contour,epsilon_k=34 ,Box_close=2):
+    if contour is None:
+        return None
+
     close = ([True, True],[False, True],[True,False],[False,False])
 
     hull = cv2.convexHull(contour)
@@ -73,6 +77,9 @@ def orderPoints(pts):
     return rect
 
 def warpImage(image, box):
+    if box is None:
+        return image
+
     w, h = pointDistance(box[0], box[1]), \
            pointDistance(box[1], box[2])
     dst_rect = np.array([[0, 0],
@@ -91,3 +98,4 @@ def get_points(image):
     if image is None:
         return None
     return orderPoints(getBoxPoint(getMaxContour(getCanny(image))))
+
