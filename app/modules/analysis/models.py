@@ -19,7 +19,7 @@ class BussModel(db.Model, Timestamp):
     content_text = db.Column(db.String(length=256), nullable=False)
     log_id = db.Column(db.String(length=64), nullable=False)
     result = db.Column(db.String(length=2000), nullable=False) #TODO replace with sub tables
-    image = db.Column(db.String(length=2000), nullable=False) #TODO replace with image path
+    image = db.Column(db.String(length=10000000), nullable=False) #TODO replace with image path
 
 
 class CharacterAnalysis(db.Model, Timestamp):
@@ -32,7 +32,7 @@ class CharacterAnalysis(db.Model, Timestamp):
     id = db.Column(db.Integer, primary_key=True) 
     cuid = db.Column(db.String(length=64), nullable=False)
     log_id = db.Column(db.String(length=64), nullable=False)
-    image = db.Column(db.String(length=2000), nullable=False) #TODO replace with image path
+    image = db.Column(db.String(length=9000000), nullable=False) #TODO replace with image path
     married = db.Column(db.Integer, nullable=False)
     request_type = db.Column(db.Integer, nullable=False)
     age = db.Column(db.Integer, nullable=False)

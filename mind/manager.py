@@ -4,10 +4,10 @@ import base64
 import json
 import uuid
 
-from cv.utils import b64toPILImg
+from cv.utils import b64toPILImg, save_ocv_image
 
 
-Storage_Dir = "../img_data"
+Storage_Dir = "img_data"
 
 
 """
@@ -22,6 +22,12 @@ class ImageStoreManager():
     def check_format(self, feature_str):
         return "jpg"
         # return None
+    
+    def save_opencv_img(self, image, format='png'):
+        uid = str(uuid.uuid1())
+        img_name = f"sv_image_{uid}.{format}"
+        save_ocv_image(image, os.path.join(self.saved_dir, img_name))
+        return uid
 
     def save(self, base64_img=None, img_metadata=None):
         if base64_img:
