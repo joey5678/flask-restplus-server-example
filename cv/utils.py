@@ -12,7 +12,6 @@ def b64toOCVImg(base64_img):
     return img
 
 def b64toPILImg(base64_img):
-    print(f"base64 img:{base64_img}.")
     picture_raw = base64.b64decode(base64_img)
     image = Image.open(io.BytesIO(picture_raw))
     return image

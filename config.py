@@ -46,10 +46,10 @@ class BaseConfig(object):
     }
 
     ENABLED_MODULES = (
-        'auth',
+        # 'auth',
 
         'users',
-        'teams',
+        # 'teams',
         'analysis',
         'api',
     )

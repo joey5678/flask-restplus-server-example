@@ -103,15 +103,15 @@ def do_character_analysis(args):
     tgt_args = transfer_fields(args)
     img_data = args.get('image', None)
     assert img_data is not None, "receive none image in character analysis"
-    cv_img = b64toOCVImg(img_data)
-    print(f"received b64img. lenght: {len(img_data)}.")
-    print(f"after decoding, the size of the image is {cv_img.shape[:2]}")
-    w, h = cv_img.shape[0], cv_img.shape[1]
-    align_img = warpImage(cv_img, get_points(cv_img))
-    if align_img.shape[:2] != (w, h):
-        align_img = resize(align_img, w, h)
-
-    uid = img_store_manager.save_opencv_img(align_img)
+#     cv_img = b64toOCVImg(img_data)
+#     log.debug(f"received b64img. lenght: {len(img_data)}.")
+#     log.debug(f"after decoding, the size of the image is {cv_img.shape[:2]}")
+#     w, h = cv_img.shape[0], cv_img.shape[1]
+#     align_img = warpImage(cv_img, get_points(cv_img))
+#     if align_img.shape[:2] != (w, h):
+#         align_img = resize(align_img, w, h)
+# #   save the aligned image. 
+#     uid = img_store_manager.save_opencv_img(align_img)
 
     c_analysis = CA_Model(**tgt_args)
     c_analysis.log_id = "test_LOG_ID_0000001"
