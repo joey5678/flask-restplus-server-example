@@ -5,7 +5,7 @@ Input arguments (Parameters) for Team resources RESTful API
 """
 
 from flask_marshmallow import base_fields
-from flask_restplus_patched import PostFormParameters, PatchJSONParameters
+from flask_restplus_patched import Parameters, PostFormParameters, PatchJSONParameters
 
 from . import schemas
 
@@ -24,7 +24,7 @@ class CreateReportParameters(PostFormParameters, schemas.BaseReportSchema):
 
 
 
-class CreateBussParameters(PostFormParameters, schemas.BussSchema):
+class CreateBussParameters(Parameters, schemas.BussSchema):
 
     class Meta(schemas.BussSchema.Meta):
         pass
