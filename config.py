@@ -5,6 +5,9 @@ import os
 class BaseConfig(object):
     SECRET_KEY = 'this-really-needs-to-be-changed'
 
+    JWT_AUTH_USERNAME_KEY = 'identifier'
+    JWT_AUTH_PASSWORD_KEY = 'req_source'
+
     PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
     # POSTGRESQL
@@ -46,9 +49,9 @@ class BaseConfig(object):
     }
 
     ENABLED_MODULES = (
-        # 'auth',
+        'auth',
 
-        'users',
+        # 'users',
         # 'teams',
         'analysis',
         'api',

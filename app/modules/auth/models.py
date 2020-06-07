@@ -10,6 +10,7 @@ More details are available here:
 * http://lepture.com/en/2013/create-oauth-server
 """
 import enum
+from datetime import datetime
 
 from sqlalchemy_utils.types import ScalarListType
 
@@ -135,3 +136,17 @@ class OAuth2Token(db.Model):
     def delete(self):
         with db.session.begin():
             db.session.delete(self)
+
+
+class Users(db.Model):
+    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    open_id = db.Column(db.String(256), nullable=True)
+    # identifier = db.Column(db.String(64), nullable=True)
+    identifier = db.Column(db.String(128), index=True, unique=True, nullable=False)
+    req_source = db.Column(db.String(256), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # todos = db.relationship("Todos", lazy='select', backref=db.backref('todos', lazy='joined'))
+
+    def __repr__(self):
+        return '<User {}>'.format(self.identifier)

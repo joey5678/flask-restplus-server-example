@@ -7,16 +7,17 @@ RESTful API Team resources
 
 import logging
 
-from flask import redirect, url_for
+from flask import Flask, redirect, url_for
 from flask_login import current_user
 from flask_restplus_patched import Resource
 from flask_restplus import fields
 from flask_restplus._http import HTTPStatus
 
+from app.library import jwt
 from app.extensions import db
 from app.extensions.api import Namespace, abort
 from app.modules.users import permissions
-from app.modules.users.models import User
+# from app.modules.users.models import User
 
 
 from . import parameters, schemas
@@ -24,6 +25,7 @@ from .models import CharacterAnalysis as CA_Model
 from .models import AnalysisReport as AR_Model
 from .models import MindMatch as MCM_Model
 from .models import MindSpecMatch as MSM_Model
+
 
 
 from mind.manager import img_store_manager
@@ -43,7 +45,6 @@ api = Namespace('analysis', description="analysis")  # pylint: disable=invalid-n
 #     'content_type': fields.String(required=True, description='The task details'),
 #     'content_text': fields.String(required=True, description='The task details'),
 # })
-
 
 Fields_mapping = {
     10: {
@@ -103,16 +104,16 @@ def do_character_analysis(args):
     tgt_args = transfer_fields(args)
     img_data = args.get('image', None)
     assert img_data is not None, "receive none image in character analysis"
-#     cv_img = b64toOCVImg(img_data)
-#     log.debug(f"received b64img. lenght: {len(img_data)}.")
-#     log.debug(f"after decoding, the size of the image is {cv_img.shape[:2]}")
-#     w, h = cv_img.shape[0], cv_img.shape[1]
-#     align_img = warpImage(cv_img, get_points(cv_img))
-#     if align_img.shape[:2] != (w, h):
-#         align_img = resize(align_img, w, h)
-# #   save the aligned image. 
-#     uid = img_store_manager.save_opencv_img(align_img)
-
+    cv_img = b64toOCVImg(img_data)
+    log.debug(f"received b64img. lenght: {len(img_data)}.")
+    log.debug(f"after decoding, the size of the image is {cv_img.shape[:2]}")
+    w, h = cv_img.shape[0], cv_img.shape[1]
+    align_img = warpImage(cv_img, get_points(cv_img))
+    if align_img.shape[:2] != (w, h):
+        align_img = resize(align_img, w, h)
+#   save the aligned image. 
+    uid = img_store_manager.save_opencv_img(align_img)
+    tgt_args['image'] = uid
     c_analysis = CA_Model(**tgt_args)
     c_analysis.log_id = "test_LOG_ID_0000001"
     c_analysis.result = [{
@@ -219,6 +220,7 @@ class Business(Resource):
 
     @api.parameters(parameters.CreateBussParameters())
     @api.response(schemas.BussResultSchema())
+    @jwt.required
     def post(self, args):
         print(f"-------------------request type is {args['request_type']}")
         if args['request_type'] == 10:
@@ -233,7 +235,6 @@ class Business(Resource):
             return do_mind_spec_match(args)
 
 
-@api.route('/analy')
 class Analysis(Resource):
 
     @api.parameters(parameters.CreateAnalysisParameters())
@@ -258,7 +259,7 @@ class Analysis(Resource):
             }]
         return c_analysis
         
-@api.route('/report')
+
 class Report(Resource):
 
     @api.parameters(parameters.CreateReportParameters())

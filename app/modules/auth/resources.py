@@ -1,73 +1,79 @@
-# encoding: utf-8
-# pylint: disable=too-few-public-methods,invalid-name,bad-continuation
-"""
-RESTful API Auth resources
---------------------------
-"""
-
 import logging
 
-from flask_login import current_user
+from flask import request, jsonify
 from flask_restplus_patched import Resource
-from flask_restplus._http import HTTPStatus
-from werkzeug import security
+from flask_jwt_extended import jwt_refresh_token_required
 
+from app import response
 from app.extensions.api import Namespace
+from app.library import jwt
 
-from . import schemas, parameters
-from .models import db, OAuth2Client
-
+from .models import Users
 
 log = logging.getLogger(__name__)
 api = Namespace('auth', description="Authentication")
 
+@api.route('/')
+class Login(Resource):
+    def get(self):
+        try:
+            token = jwt.decode()
+            return response.ok(token, '')
+        except Exception as e:
+            print(e)
 
-@api.route('/oauth2_clients/')
-@api.login_required(oauth_scopes=['auth:read'])
-class OAuth2Clients(Resource):
-    """
-    Manipulations with OAuth2 clients.
-    """
+    def post(self):
+        try:
+            identifier = request.json['phone']
+            req_source = request.json['app_id']
 
-    @api.parameters(parameters.ListOAuth2ClientsParameters())
-    @api.response(schemas.BaseOAuth2ClientSchema(many=True))
-    def get(self, args):
-        """
-        List of OAuth2 Clients.
+            user = None #Users.query.filter_by(identifier=identifier).first()
+            if not user:
+                user = Users()
+                user.identifier = identifier
+                user.req_source = req_source
 
-        Returns a list of OAuth2 Clients starting from ``offset`` limited by
-        ``limit`` parameter.
-        """
-        oauth2_clients = OAuth2Client.query
-        if 'user_id' in args:
-            oauth2_clients = oauth2_clients.filter(
-                OAuth2Client.user_id == args['user_id']
-            )
-        return oauth2_clients.offset(args['offset']).limit(args['limit'])
+                # return response.badRequest([], 'Empty....')
 
-    @api.login_required(oauth_scopes=['auth:write'])
-    @api.parameters(parameters.CreateOAuth2ClientParameters())
-    @api.response(schemas.DetailedOAuth2ClientSchema())
-    @api.response(code=HTTPStatus.FORBIDDEN)
-    @api.response(code=HTTPStatus.CONFLICT)
-    @api.doc(id='create_oauth_client')
-    def post(self, args):
-        """
-        Create a new OAuth2 Client.
+            # if not user.checkPassword(password):
+            #     return response.badRequest([], 'Your credentials is invalid')
 
-        Essentially, OAuth2 Client is a ``client_id`` and ``client_secret``
-        pair associated with a user.
-        """
-        with api.commit_or_abort(
-                db.session,
-                default_error_message="Failed to create a new OAuth2 client."
-            ):
-            # TODO: reconsider using gen_salt
-            new_oauth2_client = OAuth2Client(
-                user_id=current_user.id,
-                client_id=security.gen_salt(40),
-                client_secret=security.gen_salt(50),
-                **args
-            )
-            db.session.add(new_oauth2_client)
-        return new_oauth2_client
+            data = singleTransform(user, withTodo=False)
+            access_token = jwt.encode(data)
+            refresh_token = jwt.encode(data, access=False)
+
+            return response.ok({
+                # 'data': data,
+                'access_token': access_token,
+                'refresh_token': refresh_token,
+            }, "")
+        except Exception as e:
+            return response.badRequest('', e)
+
+@api.route('/refresh')
+class Refresh(Resource):
+    @jwt_refresh_token_required
+    def post(self):
+        try:
+            current_user = jwt.get_jwt_identity()
+            new_token = jwt.encode(current_user)
+        except Exception as e:
+            error_info = str(e)
+            print("refresh failed with error {error_info}")
+            ret = {
+                "access_token": "" 
+            }
+            return response.unAuthorized(ret, error_info)
+
+        ret = {
+            'access_token': new_token#create_access_token(identity=current_user)
+        }
+        return response.ok(ret, "")
+
+
+def singleTransform(users, withTodo=True):
+    data = {
+        'id': users.id,
+        'identifier': users.identifier,
+        'req_source': users.req_source,
+    }

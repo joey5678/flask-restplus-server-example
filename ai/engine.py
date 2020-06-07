@@ -40,8 +40,10 @@ def test_restful():
         'image': IMAGE_BASE64}
 
     headers = {"content-type": "application/json"}
+    auth_body = {"identifier":"111111111", "req_source":"222222222"}
     data = json.dumps(body)
     url = 'http://127.0.0.1:5000/api/v1/analysis/'
+    url = 'http://127.0.0.1:5000/auth/'
     json_response = requests.post(url, data=data, headers=headers)
     print(json_response.text)
 
@@ -80,7 +82,10 @@ def postprocess(prediction, im_width=None, im_height=None):
 
 
 if __name__ == "__main__":
-    image_path="./test.jpg"
-    img = cv2.imread(image_path)
-    img = cv2.resize(img, (446, 446))
-    print(postprocess(infer(img.tolist()), 446, 446))
+    if False:
+        image_path="./test.jpg"
+        img = cv2.imread(image_path)
+        img = cv2.resize(img, (446, 446))
+        print(postprocess(infer(img.tolist()), 446, 446))
+    else:
+        test_restful()

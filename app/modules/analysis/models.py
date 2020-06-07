@@ -3,7 +3,7 @@
 Team database models
 --------------------
 """
-
+from datetime import datetime
 from sqlalchemy_utils import Timestamp
 
 from app.extensions import db
@@ -15,12 +15,18 @@ class BussModel(db.Model, Timestamp):
     request_type = db.Column(db.Integer, nullable=False)
     sub_type = db.Column(db.Integer, nullable=False)
     content_id = db.Column(db.String(length=64), nullable=False)
-    content_type = sub_type = db.Column(db.Integer, nullable=False)
+    content_type = db.Column(db.Integer, nullable=False)
     content_text = db.Column(db.String(length=256), nullable=False)
     log_id = db.Column(db.String(length=64), nullable=False)
     result = db.Column(db.String(length=2000), nullable=False) #TODO replace with sub tables
     image = db.Column(db.String(length=10000000), nullable=False) #TODO replace with image path
 
+
+class LoginModel(db.Model, Timestamp):
+    id = db.Column(db.Integer, primary_key=True) 
+    source_str = db.Column(db.String(length=128), nullable=False) # openid
+    indntifier = db.Column(db.String(length=128), nullable=False) # phone no
+    token = db.Column(db.String(length=128), nullable=True)
 
 class CharacterAnalysis(db.Model, Timestamp):
     """

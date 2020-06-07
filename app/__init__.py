@@ -7,6 +7,7 @@ import sys
 
 from flask import Flask
 from werkzeug.contrib.fixers import ProxyFix
+from flask_jwt_extended import JWTManager
 
 
 CONFIG_NAME_MAPPER = {
@@ -63,5 +64,7 @@ def create_app(flask_config_name=None, **kwargs):
 
     from . import modules
     modules.init_app(app)
+
+    jwt = JWTManager(app)
 
     return app
