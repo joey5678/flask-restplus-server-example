@@ -234,7 +234,7 @@ class Business(Resource):
         elif args['request_type'] == 21:
             return do_mind_spec_match(args)
 
-
+"""
 class Analysis(Resource):
 
     @api.parameters(parameters.CreateAnalysisParameters())
@@ -280,3 +280,4 @@ class Report(Resource):
             }]
             
         return a_report
+"""

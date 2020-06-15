@@ -1,0 +1,1 @@
+# sqlite3 example.db '.read /mnt/c/Downloads/AI_UPID.sql'

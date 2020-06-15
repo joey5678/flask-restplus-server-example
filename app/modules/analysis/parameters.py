@@ -10,7 +10,7 @@ from flask_restplus_patched import Parameters, PostFormParameters, PatchJSONPara
 from . import schemas
 
 
-
+"""
 class CreateAnalysisParameters(PostFormParameters, schemas.BaseAnalysisSchema):
 
     class Meta(schemas.BaseAnalysisSchema.Meta):
@@ -22,7 +22,7 @@ class CreateReportParameters(PostFormParameters, schemas.BaseReportSchema):
     class Meta(schemas.BaseReportSchema.Meta):
         pass
 
-
+"""
 
 class CreateBussParameters(Parameters, schemas.BussSchema):
 

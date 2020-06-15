@@ -9,7 +9,7 @@ from flask_restplus_patched import ModelSchema
 
 # from app.modules.users.schemas import BaseUserSchema
 
-from .models import CharacterAnalysis, AnalysisReport, BussModel
+from .models import BussModel #CharacterAnalysis, AnalysisReport, BussModel
 
 
 class BussSchema(ModelSchema):
@@ -35,11 +35,9 @@ class BussResultSchema(ModelSchema):
             BussModel.result.key,
         )
 
-
+"""
 class BaseAnalysisSchema(ModelSchema):
-    """
-    Base team schema exposes only the most general fields.
-    """
+
 
     class Meta:
         # pylint: disable=missing-docstring
@@ -69,9 +67,7 @@ class CharacterAnalysisResultSchema(ModelSchema):
 
 
 class BaseReportSchema(ModelSchema):
-    """
-    Base team schema exposes only the most general fields.
-    """
+
 
     class Meta:
         # pylint: disable=missing-docstring
@@ -93,3 +89,5 @@ class AnalysisReportResultSchema(ModelSchema):
             AnalysisReport.log_id.key,
             AnalysisReport.result.key,
         )
+
+"""

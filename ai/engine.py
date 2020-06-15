@@ -85,7 +85,7 @@ if __name__ == "__main__":
     if False:
         image_path="./test.jpg"
         img = cv2.imread(image_path)
-        img = cv2.resize(img, (446, 446))
-        print(postprocess(infer(img.tolist()), 446, 446))
+        img = cv2.resize(img, (224, 224))
+        print(postprocess(infer(img.tolist()), 224, 224))
     else:
         test_restful()
