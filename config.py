@@ -69,8 +69,10 @@ class BaseConfig(object):
 
 
 class ProductionConfig(BaseConfig):
-    SECRET_KEY = 'secret_123456' #os.getenv('EXAMPLE_API_SERVER_SECRET_KEY')
-    SQLALCHEMY_DATABASE_URI = 'sqlite://' #os.getenv('EXAMPLE_API_SERVER_SQLALCHEMY_DATABASE_URI')
+    
+    SECRET_KEY = "verysecret" #os.getenv('EXAMPLE_API_SERVER_SECRET_KEY')
+    SQLALCHEMY_DATABASE_URI = "sqlite://" #os.getenv('EXAMPLE_API_SERVER_SQLALCHEMY_DATABASE_URI')
+
 
 
 class DevelopmentConfig(BaseConfig):

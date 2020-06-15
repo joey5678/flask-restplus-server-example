@@ -1,0 +1,14 @@
+[Unit]
+Description=uWSGI instance to serve myproject
+After=network.target
+
+[Service]
+User=dltest
+Group=dltest
+WorkingDirectory=/home/dltest/codes/mind_map
+Environment="PATH=/home/dltest/anaconda3/bin/"
+Environment="FLASK_CONFIG=development"
+ExecStart=/home/dltest/anaconda3/bin/invoke app.run -w
+
+[Install]
+WantedBy=multi-user.target
