@@ -29,14 +29,22 @@ class ImageStoreManager():
         save_ocv_image(image, os.path.join(self.saved_dir, img_name))
         return uid
 
-    def save(self, base64_img=None, img_metadata=None):
+
+    def saveb64(self, base64_img=None, img_metadata=None):
         if base64_img:
+            uid = self.save_b64image(base64_img)
+            if img_metadata:
+                self.save_metadata(uid, img_metadata)
+
+
+    def save(self, img=None, img_metadata=None):
+        if img:
             uid = self.save_image(base64_img)
             if img_metadata:
                 self.save_metadata(uid, img_metadata)
-        
+
     
-    def save_image(self, base64_img):
+    def save_b64image(self, base64_img):
 
         img_format = self.check_format(base64_img[:20])
         if not img_format:
@@ -46,6 +54,15 @@ class ImageStoreManager():
         # save image...
 
         image = b64toPILImg(base64_img)
+        img_name = f"sv_image_{uid}.{img_format}"
+        image.save(os.path.join(self.saved_dir, img_name))
+
+        return uid
+
+    def save_image(self, image, img_format='png'):
+
+        uid = str(uuid.uuid1())
+        # save image...
         img_name = f"sv_image_{uid}.{img_format}"
         image.save(os.path.join(self.saved_dir, img_name))
 
@@ -60,6 +77,13 @@ class ImageStoreManager():
         except:
             print("Fail to write metadata into json file ")
 
-
+    def get_image(self, image_id, img_format='png'):
+        data = None
+        img_name = f"sv_image_{image_id}.{img_format}"
+        if os.path.isfile(os.path.join(self.saved_dir, img_name)):
+            with open(os.path.join(self.saved_dir, img_name), 'rb') as f:
+                data = f.read()
+        
+        return data
 
 img_store_manager = ImageStoreManager()

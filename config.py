@@ -50,6 +50,7 @@ class BaseConfig(object):
 
     ENABLED_MODULES = (
         'auth',
+        'image',
         # 'users',
         # 'teams',
         'analysis',

@@ -27,7 +27,6 @@ def infer(img_data):
     url = 'http://10.240.108.54:8501/v1/models/tree_model:predict'
     json_response = requests.post(url, data=data, headers=headers)
     predictions = json.loads(json_response.text)['predictions']
-
     return predictions[0]
 
 def test_restful():
@@ -57,13 +56,13 @@ def postprocess(prediction, im_width=None, im_height=None):
     output_dict['detection_classes'] = [int(v) for v in output_dict['detection_classes']]
     max_boxes = len(output_dict['detection_boxes'])
     result = []
-    min_score_thresh = 0.5
+    min_score_thresh = 0.1
     for i in range(max_boxes):
         if output_dict['detection_scores'][i] < min_score_thresh:
             continue
-        # print(output_dict['detection_scores'][i])
-        # print()
-        # print(output_dict['detection_boxes'][i])
+        print(output_dict['detection_scores'][i])
+        print()
+        print(output_dict['detection_boxes'][i])
         ymin, xmin, ymax, xmax = output_dict['detection_boxes'][i]
         if im_width and im_height:
             bbox = (int(xmin * im_width), int(xmax * im_width), int(ymin * im_height), int(ymax * im_height))
@@ -82,10 +81,10 @@ def postprocess(prediction, im_width=None, im_height=None):
 
 
 if __name__ == "__main__":
-    if False:
+    if True:
         image_path="./test.jpg"
         img = cv2.imread(image_path)
-        img = cv2.resize(img, (224, 224))
-        print(postprocess(infer(img.tolist()), 224, 224))
+        img = cv2.resize(img, (512, 512))
+        print(postprocess(infer(img.tolist()), 512, 512))
     else:
         test_restful()
