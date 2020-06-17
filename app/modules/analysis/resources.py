@@ -204,12 +204,12 @@ def do_mind_spec_match(args):
         {
         "elements": "思想匹配度",
         "source_value": 55,
-        "targer_value": 30
+        "target_value": 30
         },
         {
         "elements": "情感度",
         "source_value": 71,
-        "targer_value": 59.3
+        "target_value": 59.3
         }]
 
     return ms_match
