@@ -4,7 +4,7 @@ import base64
 import json
 import uuid
 
-from cv.utils import b64toPILImg, save_ocv_image
+from cv.utils import b64toPILImg, save_ocv_image, rawtoOCVImg, rawtoPILImg
 
 
 Storage_Dir = "img_data"
@@ -23,9 +23,12 @@ class ImageStoreManager():
         return "jpg"
         # return None
     
-    def save_opencv_img(self, image, format='png'):
-        uid = str(uuid.uuid1())
-        img_name = f"sv_image_{uid}.{format}"
+    def save_opencv_img(self, image, img_id=None, name_prefix=None, format='png'):
+        uid = img_id if img_id is not None else str(uuid.uuid1())
+        aligned_tag = "" if img_id is None else "aligned_"
+        tag = name_prefix.strip() if name_prefix is not None else aligned_tag
+        tag = f"{tag}_" if not tag.endswith("_") else tag
+        img_name = f"{tag}sv_image_{uid}.{format}"
         save_ocv_image(image, os.path.join(self.saved_dir, img_name))
         return uid
 
@@ -85,5 +88,15 @@ class ImageStoreManager():
                 data = f.read()
         
         return data
+
+    def get_OCV_image(self, image_id, img_format='png'):
+        data = self.get_image(image_id, img_format)
+
+        return None if data is None else rawtoOCVImg(data)
+
+    def get_PIL_image(self, image_id, img_format='png'):
+        data = self.get_image(image_id, img_format)
+
+        return None if data is None else rawtoPILImg(data)
 
 img_store_manager = ImageStoreManager()
