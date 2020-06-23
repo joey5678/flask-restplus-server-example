@@ -46,7 +46,6 @@ class ImgUpload(Resource):
 
 @api.route("/<id>")
 class ImageStore(Resource):
-    @jwt.required
     def get(self, id):
         img_data = img_store_manager.get_image(id)
         if img_data:
