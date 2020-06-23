@@ -160,16 +160,39 @@ def do_teen_analysis(args):
     c_analysis.log_id = "test_LOG_ID_0000001"
     c_analysis.result = [{
         "elements":"思维成熟度",
-        "value":81,
+        "value":60,
         "average":62,
-        "range":"58-85"
+        "range":"35-71"
         },
         {
         "elements":"心智成熟度",
         "value": 71,
         "average": 59.3,
-        "range":"50-80"
-        }]
+        "range":"53-95"
+        },
+         "elements":"情绪成熟度",
+        "value":81,
+        "average":72,
+        "range":"45-91"
+        },
+        {
+        "elements":"角色成熟度",
+        "value": 55,
+        "average": 51.5,
+        "range":"52-87"
+        },
+         "elements":"能力成熟度",
+        "value":81,
+        "average":62.8,
+        "range":"50-83"
+        },
+        {
+        "elements":"潜意识平衡",
+        "value": 31,
+        "average": 29.3,
+        "range":"24-39"
+        }
+        ]
     ar_args = {'request_type': 12, 'log_id': c_analysis.log_id}
     a_report = AR_Model(**ar_args)
     a_report.result =  [
