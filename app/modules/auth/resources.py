@@ -27,11 +27,11 @@ class Login(Resource):
             identifier = request.json['phone']
             req_source = request.json['app_id']
 
-            user = None #Users.query.filter_by(identifier=identifier).first()
-            if not user:
-                user = Users()
-                user.identifier = identifier
-                user.req_source = req_source
+            # user = None #Users.query.filter_by(identifier=identifier).first()
+            # if not user:
+            user = Users()
+            user.identifier = identifier
+            user.req_source = req_source
 
                 # return response.badRequest([], 'Empty....')
 
@@ -39,6 +39,7 @@ class Login(Resource):
             #     return response.badRequest([], 'Your credentials is invalid')
 
             data = singleTransform(user, withTodo=False)
+            # print(f"-------------user data is {data}")
             access_token = jwt.encode(data)
             refresh_token = jwt.encode(data, access=False)
 
@@ -73,7 +74,9 @@ class Refresh(Resource):
 
 def singleTransform(users, withTodo=True):
     data = {
-        'id': users.id,
+        # 'id': users.id,
         'identifier': users.identifier,
         'req_source': users.req_source,
     }
+
+    return data

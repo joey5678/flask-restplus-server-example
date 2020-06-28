@@ -1,12 +1,13 @@
 # pylint: disable=too-few-public-methods,invalid-name,missing-docstring
 import os
-
+import datetime
 
 class BaseConfig(object):
     SECRET_KEY = 'this-really-needs-to-be-changed'
 
     JWT_AUTH_USERNAME_KEY = 'identifier'
     JWT_AUTH_PASSWORD_KEY = 'req_source'
+    JWT_ACCESS_TOKEN_EXPIRES = False
 
     PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
@@ -70,7 +71,7 @@ class BaseConfig(object):
 
 
 class ProductionConfig(BaseConfig):
-    
+    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(days=30)
     SECRET_KEY = "verysecret" #os.getenv('EXAMPLE_API_SERVER_SECRET_KEY')
     SQLALCHEMY_DATABASE_URI = "sqlite://" #os.getenv('EXAMPLE_API_SERVER_SQLALCHEMY_DATABASE_URI')
 
