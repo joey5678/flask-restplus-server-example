@@ -34,6 +34,7 @@ from .models import AI_USER_INFOModel as User_Model
 from mind.manager import img_store_manager
 from cv.align import get_points, warpImage
 from cv.utils import *
+from mock import object as mock_obj
 
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
@@ -194,34 +195,14 @@ def do_character_analysis(args):
 
     c_analysis = CA_Model(**tgt_args)
     c_analysis.log_id = log_id
-    c_analysis.result = [{
-        "elements":"思维成熟度",
-        "value":81,
-        "average":62,
-        "range":"58-85"
-        },
-        {
-        "elements":"心智成熟度",
-        "value": 71,
-        "average": 59.3,
-        "range":"50-80"
-        }]
+    c_analysis.result = mock_obj.emit_ca_result()
+
     return c_analysis
 
 def do_analysis_report(args):
     tgt_args = transfer_fields(args)
     a_report = AR_Model(**tgt_args)
-    a_report.result =  [
-        {
-        "elements": "自我认知",
-        "summary": "思维成熟度，指的是看待事物有自己独立的思考，不会人云亦云。或者说拥有自己稳定的价值体系，不会轻易受他人和周围环境影响。",
-        "description": "你的思维体系比较成熟. 在生活中你对人对事有自己独立的想法和判断，能够形成自己的意见，从而在生活中掌握主动权。从深层意义而言，这种思维的成熟意味着整合的价值体系。"
-        },
-        {
-        "elements": "理性与感性",
-        "summary": "一个人的心智成熟度，表现在他是如何看待自我的。他表现出来的状态与内在世界你保持真实的一致性，他们心智就达到成熟的状态。",
-        "description": "你的心智比较成熟.对于你的年龄阶段来说，你能稳定客观地看待自身挑战，你可以一步步地收获新的体验和成长."
-        }]
+    a_report.result = mock_obj.emit_report()
         
     return a_report
 
@@ -246,55 +227,12 @@ def do_teen_analysis(args):
 
     c_analysis = CA_Model(**tgt_args)
     c_analysis.log_id = log_id
-    c_analysis.result = [{
-        "elements":"思维成熟度",
-        "value":60,
-        "average":62,
-        "range":"35-71"
-        },
-        {
-        "elements":"心智成熟度",
-        "value": 71,
-        "average": 59.3,
-        "range":"53-95"
-        },
-        {"elements":"情绪成熟度",
-        "value":81,
-        "average":72,
-        "range":"45-91"
-        },
-        {
-        "elements":"角色成熟度",
-        "value": 55,
-        "average": 51.5,
-        "range":"52-87"
-        },
-        {"elements":"能力成熟度",
-        "value":81,
-        "average":62.8,
-        "range":"50-83"
-        },
-        {
-        "elements":"潜意识平衡",
-        "value": 31,
-        "average": 29.3,
-        "range":"24-39"
-        }
-        ]
+    c_analysis.result = mock_obj.emit_ca_result()
+
     ar_args = {'request_type': 12, 'log_id': c_analysis.log_id}
     a_report = AR_Model(**ar_args)
-    a_report.result =  [
-        {
-        "elements": "自我认知",
-        "summary": "思维成熟度，指的是看待事物有自己独立的思考，不会人云亦云。或者说拥有自己稳定的价值体系，不会轻易受他人和周围环境影响。",
-        "description": "你的思维体系比较成熟. 在生活中你对人对事有自己独立的想法和判断，能够形成自己的意见，从而在生活中掌握主动权。从深层意义而言，这种思维的成熟意味着整合的价值体系。"
-        },
-        {
-        "elements": "理性与感性",
-        "summary": "一个人的心智成熟度，表现在他是如何看待自我的。他表现出来的状态与内在世界你保持真实的一致性，他们心智就达到成熟的状态。",
-        "description": "你的心智比较成熟.对于你的年龄阶段来说，你能稳定客观地看待自身挑战，你可以一步步地收获新的体验和成长."
-        }]
-    
+    a_report.result = mock_obj.emit_report()
+
     c_analysis.result += a_report.result
     return c_analysis
 
@@ -333,53 +271,13 @@ def do_mind_spec_match(args):
     ms_match = MSM_Model(**tgt_args)
 
     if sub_type == 100:
-        ms_match.result = [{
-            "elements": "性格匹配度",
-            "source_value": 81,
-            "target_value": 62
-            },
-            {
-            "elements": "思想匹配度",
-            "source_value": 55,
-            "target_value": 30
-            },
-            {
-            "elements": "情感度",
-            "source_value": 71,
-            "target_value": 59.3
-            }]
+        ms_match.result = mock_obj.emit_100_result()
+        
     elif sub_type == 101:
-        ms_match.result = [{
-            "elements": "性格匹配度",
-            "source_value": 81,
-            "target_value": 62
-            },
-            {
-            "elements": "家庭观念匹配度",
-            "source_value": 55,
-            "target_value": 30
-            },
-            {
-            "elements": "婚恋角色匹配度",
-            "source_value": 71,
-            "target_value": 59.3
-            }]
+        ms_match.result = mock_obj.emit_101_result()
+        
     else:
-        ms_match.result = [{
-            "elements": "心智匹配度",
-            "source_value": 81,
-            "target_value": 62
-            },
-            {
-            "elements": "能力匹配度",
-            "source_value": 55,
-            "target_value": 30
-            },
-            {
-            "elements": "目标匹配度",
-            "source_value": 71,
-            "target_value": 59.3
-            }]
+        ms_match.result = mock_obj.emit_102_result()
 
     return ms_match
 
