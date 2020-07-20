@@ -4,7 +4,7 @@ import sys
 
 import cv2
 
-from mock.object import IMAGE_BASE64
+# from mock.object import IMAGE_BASE64
 
 
 Label_Map = {
@@ -26,6 +26,7 @@ def infer(img_data):
     data = json.dumps({"instances": [img_data]})
     url = 'http://10.240.108.54:8501/v1/models/tree_model:predict'
     json_response = requests.post(url, data=data, headers=headers)
+    print(json_response.text)
     predictions = json.loads(json_response.text)['predictions']
     return predictions[0]
 
@@ -84,7 +85,7 @@ if __name__ == "__main__":
     if True:
         image_path="./test.jpg"
         img = cv2.imread(image_path)
-        img = cv2.resize(img, (512, 512))
-        print(postprocess(infer(img.tolist()), 512, 512))
+        img = cv2.resize(img, (1024, 1024))
+        print(postprocess(infer(img.tolist()), 1024, 1024))
     else:
         test_restful()
