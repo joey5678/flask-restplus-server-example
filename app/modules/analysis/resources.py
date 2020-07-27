@@ -128,7 +128,7 @@ def handle_image(image_id):
     uid = img_store_manager.save_opencv_img(align_img, img_id=image_id)
     return uid
 
-def handle_user():
+def handle_user(tgt_args):
     user_info = jwt.decode()['identity']
     phone = user_info['identifier']
     # need to get user data from DB by phone, 
@@ -183,7 +183,7 @@ def do_character_analysis(args):
     uid = handle_image(image_id)
 
     assert jwt.decode().get('identity', None) is not None
-    user = handle_user()
+    user = handle_user(tgt_args)
 
     # real analysis logic here
     # 1. call AI API to get objects in image
@@ -215,7 +215,7 @@ def do_teen_analysis(args):
     uid = handle_image(image_id)
 
     assert jwt.decode().get('identity', None) is not None
-    user = handle_user()
+    user = handle_user(tgt_args)
 
     # real analysis logic here
     # 1. call AI API to get objects in image

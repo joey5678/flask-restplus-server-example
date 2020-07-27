@@ -1,34 +1,63 @@
 import requests
 import json
 import sys
-
+import numpy as np
 import cv2
+from cls_id import CLS_NAMES, SEG_CLS_NAMES
+
+from web_client_mrcnn import InferenceConfig, ForwardModel, detect_mask_single_image_using_restapi, calculate_areas
+
 
 # from mock.object import IMAGE_BASE64
 
+IA_SERVER_IP = '10.240.108.54'
+IA_SEG_REST_PORT = 8501
+IA_CLS_REST_PORT = 8508
+SEG_ENDPOINT = 'tree_model'
+CLS_ENDPOINT = 'tree_cls_model'
+SEG_REST_API_URL = "http://%s:%s/v1/models/%s:predict" % (IA_SERVER_IP, IA_SEG_REST_PORT, SEG_ENDPOINT)
+CLS_REST_API_URL = "http://%s:%s/v1/models/%s:predict" % (IA_SERVER_IP, IA_CLS_REST_PORT, CLS_ENDPOINT)
 
-Label_Map = {
-    1: 'tree_head',
-    2: 'tree_body',
-    3: 'tree_root',
-    4: 'house',
-    5: 'person',
-    6: 'other',
-}
-
-
-def infer(img_data):
-    headers = {"content-type": "application/json"}
+def get_areas(img_data):
+    """
     # body = {"instances": [1.0, 2.0, 5.0]}
     # data = json.dumps(body)
     # url = 'http://10.240.108.54:8501/v1/models/half_plus_two:predict'
+    """
+    preprocess_obj = ForwardModel(InferenceConfig())
+    r = detect_mask_single_image_using_restapi(img_data, preprocess_obj, SEG_REST_API_URL)
+    crown_parts, trunk_part, root_part, tree_locs, tree_rois = calculate_areas(img_data, r)
 
-    data = json.dumps({"instances": [img_data]})
-    url = 'http://10.240.108.54:8501/v1/models/tree_model:predict'
-    json_response = requests.post(url, data=data, headers=headers)
-    print(json_response.text)
-    predictions = json.loads(json_response.text)['predictions']
-    return predictions[0]
+    print(crown_parts)
+    print(trunk_part)
+    print(root_part)
+    print(tree_locs)
+    print(tree_rois)
+
+    roi_imgs = []
+    for roi_cls, roi_loc in tree_rois.items():
+        x0, y0, x1, y1 = roi_loc
+        roi_imgs.append(img_data[y0:y1, x0:x1])
+
+    get_cls_results(roi_imgs)
+    
+
+def get_cls_results(roi_images):
+    normal_roi_list = []
+    for roi_image in roi_images:
+        roi_image = cv2.resize(roi_image, (256, 256))/255.
+        normal_roi_list.append(roi_image.tolist())
+
+    headers = {"content-type": "application/json"}
+    data = json.dumps({"instances": normal_roi_list})
+    json_response = requests.post(CLS_REST_API_URL, data=data, headers=headers)
+    
+    try:
+        predictions = json.loads(json_response.text)['predictions']
+        return cls_postprocess(predictions)
+    except:
+        print("[DEBUG] RESTFUL CLS failed: {}".format(json_response.text))
+        return None
 
 def test_restful():
     body = {'source_id': 'test',
@@ -47,7 +76,17 @@ def test_restful():
     json_response = requests.post(url, data=data, headers=headers)
     print(json_response.text)
 
-def postprocess(prediction, im_width=None, im_height=None):
+
+def cls_postprocess(predictions, im_width=None, im_height=None):
+    results = []
+    for prediction in predictions:
+        top1_id = np.array(prediction).argmax()
+        print(CLS_NAMES[top1_id])
+        print(prediction[top1_id])
+        results.append((top1_id, prediction[top1_id], CLS_NAMES[top1_id]))
+    return results
+
+def det_postprocess(prediction, im_width=None, im_height=None):
     num_detections = int(prediction.pop('num_detections'))
     output_dict = {}
     for key, value in prediction.items():
@@ -79,13 +118,12 @@ def postprocess(prediction, im_width=None, im_height=None):
 
     return result
 
-
-
 if __name__ == "__main__":
     if True:
         image_path="./test.jpg"
         img = cv2.imread(image_path)
-        img = cv2.resize(img, (1024, 1024))
-        print(postprocess(infer(img.tolist()), 1024, 1024))
+        img = cv2.resize(img, (256, 256))
+        get_areas(img)
+        # get_cls_results([img])
     else:
         test_restful()

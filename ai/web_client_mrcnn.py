@@ -10,11 +10,9 @@ import colorsys
 
 
 import random
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib import patches,  lines
-from matplotlib.patches import Polygon
-from skimage.measure import find_contours
+
+
+from upid_config import UPID_Table
 
 
 # TF variable name
@@ -128,6 +126,12 @@ def display_instances(image, boxes, masks, class_ids, class_names,
     colors: (optional) An array or colors to use with each object
     captions: (optional) A list of strings to use as captions for each object
     """
+    # import matplotlib
+    # import matplotlib.pyplot as plt
+    # from matplotlib import patches,  lines
+    # from matplotlib.patches import Polygon
+    # from skimage.measure import find_contours
+
     # Number of instances
     N = boxes.shape[0]
     if not N:
@@ -841,7 +845,7 @@ def mold_image(images, config):
 
 
 
-
+#@profile
 def detect_mask_single_image_using_restapi(image, preprocess_obj, restapi_url):
     images = np.expand_dims(image, axis=0)
     molded_images, image_metas, windows = preprocess_obj.mold_inputs(images)
@@ -875,12 +879,162 @@ class InferenceConfig(CocoConfig):
     IMAGES_PER_GPU = 1
     NUM_CLASSES = 1 + 10
 
+#
+# ===================================================================================
+#
+#           Tree area & location eval functions
+#
+#
+#====================================================================================
+#
+
+from collections import Counter
+
+class_names = ["background", "Tree_Crown", "Tree_Trunk", "Tree_Root", "Ground", "Pool", "Road", "Tree", "Railings","Tree_Branch", "River"]
+A4_area_mm = 210 * 297 #The Size of A4 Paper: 210mmx297mm
+
+def area_cal(masks_array, image_res):
+    masks_counter = dict(Counter(masks_array.flatten()))[True]
+    masks_area = A4_area_mm * float(masks_counter) / float(image_res)   #Area calculation 
+    return  masks_counter, masks_area
+
+
+def tree_roi_dist(rois, width, height):
+    y_min=min(rois[:,[0,2]].min(axis=0))
+    y_max=max(rois[:,[0,2]].max(axis=0))
+    x_min=min(rois[:,[1,3]].min(axis=0))
+    x_max=max(rois[:,[1,3]].max(axis=0))
+    if height >= width:
+        left_dist= 210*float(x_min)/float(width)
+        right_dist= 210*float(width-x_max)/float(width)
+        up_dist= 297*float(y_min)/float(height)
+        down_dist= 297*float(height-y_max)/float(height)
+        tree_height=297*float(y_max-y_min)/float(height)
+        tree_width=210*float(x_max-x_min)/float(width)
+    else:
+        left_dist= 297*float(x_min)/float(width)
+        right_dist= 297*float(width-x_max)/float(width)
+        up_dist= 210*float(y_min)/float(height)
+        down_dist= 210*float(height-y_max)/float(height)
+        tree_height=210*float(y_max-y_min)/float(height)
+        tree_width=297*float(x_max-x_min)/float(width)
+    result = {
+        'left': left_dist,
+        'right': right_dist,
+        'up': up_dist,
+        'down': down_dist,
+        'tree_height': tree_height,
+        'tree_width': tree_width
+    }
+    return result
+
+def default_tree_crown_six_parts():
+    return {
+        "crown_part1":{"area": 1000., "pixels": None},
+        "crown_part2":{"area": 2000., "pixels": None},
+        "crown_part3":{"area": 1000., "pixels": None},
+        "crown_part4":{"area": 1000., "pixels": None},
+        "crown_part5":{"area": 2000., "pixels": None},
+        "crown_part6":{"area": 1000., "pixels": None},
+    }
+
+def default_tree_trunk_part():
+    return {"area": 1000.,}
     
+
+def default_tree_root_part():
+    return {
+        "root_part": {"area": 600.}
+    }
+    
+
+def tree_crown_areas(mask,tree_crown_roi, image_res):
+
+    y1=tree_crown_roi[0]
+    y2=tree_crown_roi[2]
+    x1=tree_crown_roi[1]
+    x2=tree_crown_roi[3]
+    y11=int(y1+(y2-y1)/2)
+    x11=int(x1+(x2-x1)/3)
+    x12=int(x1+2*(x2-x1)/3)
+    
+    result = {}
+    
+    tree_crown_part3, tree_crown_part3_area = area_cal(mask[y1:y11, x1:x11], image_res)
+    tree_crown_part5, tree_crown_part5_area = area_cal(mask[y1:y11, x11:x12], image_res)
+    tree_crown_part4, tree_crown_part4_area = area_cal(mask[y1:y11, x12:x2], image_res)
+    tree_crown_part2, tree_crown_part2_area = area_cal(mask[y11:y2, x1:x11], image_res)
+    tree_crown_part6, tree_crown_part6_area = area_cal(mask[y11:y2, x11:x12], image_res)
+    tree_crown_part1, tree_crown_part1_area = area_cal(mask[y11:y2, x12:x2], image_res)
+   
+    result['crown_part1'] = {"area": tree_crown_part1_area, "pixels":tree_crown_part1}
+    result['crown_part2'] = {"area": tree_crown_part2_area, "pixels":tree_crown_part2}
+    result['crown_part3'] = {"area": tree_crown_part3_area, "pixels":tree_crown_part3}
+    result['crown_part4'] = {"area": tree_crown_part4_area, "pixels":tree_crown_part4}
+    result['crown_part5'] = {"area": tree_crown_part5_area, "pixels":tree_crown_part5}
+    result['crown_part6'] = {"area": tree_crown_part6_area, "pixels":tree_crown_part6}
+    
+    return result
+
+
+def calculate_areas(image, result):
+    cls_ids = result['class']
+    cls_ids = cls_ids.tolist()
+    num_cls = len(cls_ids)
+    masks = np.moveaxis(result['mask'], -1, 0)
+    rois = result['rois']
+    h, w = image.shape[:2]
+    image_res = image.shape[0] * image.shape[1]
+    
+    crown_idx = class_names.index('Tree_Crown')
+    trunk_idx = class_names.index('Tree_Trunk')
+    root_idx  = class_names.index('Tree_Root')
+
+    print(f"cls ids : {cls_ids}, crown id: {crown_idx}, trunk id: {trunk_idx}, root id: {root_idx}")
+    print(f"masks shape: {masks.shape}")
+ 
+    tree_ids = []
+    tree_rois = {}  
+    if crown_idx not in cls_ids:
+        tree_crown_6parts = default_tree_crown_six_parts()
+    else:
+        crown_id = cls_ids.index(crown_idx)
+        tree_ids.append(crown_id)
+        tree_crown_6parts = tree_crown_areas(masks[crown_id], rois[crown_id], image_res)
+        tree_rois['tree_crown'] = rois[crown_id]
+    
+    if trunk_idx not in cls_ids:
+        tree_trunk_area = default_tree_trunk_part()
+        tree_trunk_pixels = None
+    else:
+        trunk_id = cls_ids.index(trunk_idx)
+        tree_ids.append(trunk_id)
+        tree_trunk_area, tree_trunk_pixels = area_cal(masks[trunk_id], image_res)
+        tree_rois['tree_trunk'] = rois[trunk_id]
+
+    if root_idx not in cls_ids:
+        tree_root_area = default_tree_root_part()
+        tree_root_pixels = None
+    else:
+        root_id = cls_ids.index(root_idx)
+        tree_ids.append(root_id)
+        tree_root_area, tree_root_pixels = area_cal(masks[root_id], image_res)
+        tree_rois['root_id'] = rois[root_id]
+    
+    trunk_part = {'trunk_part': {'area': tree_trunk_area, 'pixels': tree_trunk_pixels}}
+    root_part = {'root_part' : {'area': tree_root_area, 'pixels': tree_root_pixels }}
+    
+    
+    trois = rois[tree_ids, :]
+    print(f"t rois shape: {trois.shape}, value: {trois}")
+    tree_locs = {"tree_locs": tree_roi_dist(trois, w, h)}
+    
+    return tree_crown_6parts, trunk_part, root_part, tree_locs, tree_rois
+
+
 def main():
-    
     coco_config = InferenceConfig()
     MY_INFERENCE_CONFIG = coco_config
-
     # Tensorflow Model server variable
     ADDRESS = '10.240.108.54'
     PORT_NO_GRPC = 8500
@@ -895,28 +1049,38 @@ def main():
     model_config = MY_INFERENCE_CONFIG
     preprocess_obj = ForwardModel(model_config)
 
-    image_path = "./024.jpg"
+    image_path = "./test.jpg"
     call_type = "restapi"
 
     if not os.path.exists(image_path):
         print(image_path, " -- Does not exist")
         exit()
-
-    image = cv2.imread(image_path)
-
     import time
     t0 = time.time()
+    image = cv2.imread(image_path)
+    print(image.shape)
+
     r = detect_mask_single_image_using_restapi(image, preprocess_obj, RESTAPI_URL)
     print(r['rois'])
     print(r['class'])
     print(r['mask'].shape)
     print(r['scores'].shape)
+    
+    print(time.time() - t0)
+    
     class_names = ["background", "Tree_Crown", "Tree_Trunk", 
                    "Tree_Root", "Ground", "Pool", "Road", "Tree", "Railings","Tree_Branch", "River"]
-    #display_instances(image, r['rois'], r['mask'], r['class'], 
-    #                        class_names, r['scores'])
-    t1 = time.time()
-    print(t1 - t0)
+    # display_instances(image, r['rois'], r['mask'], r['class'], 
+    #                         class_names, r['scores'])
 
-main()
+    
+    crown_parts, trunk_part, root_part, tree_locs = calculate_areas(image, r)
+    print(crown_parts)
+    print(trunk_part)
+    print(root_part)
+    print(tree_locs)
+    
+    
+if __name__ == "__main__":
+    main()
 
